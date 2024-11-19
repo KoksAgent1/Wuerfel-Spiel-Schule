@@ -14,6 +14,8 @@ namespace DiceGame
         HighestSingleDie,
         ReRoll
     }
+
+    // Class to hold all messages and constants for easy editing
     static class Messages
     {
         // Menu options
@@ -25,13 +27,13 @@ namespace DiceGame
         public const string InvalidSelection = "Invalid selection. Please try again.";
         public const string PressAnyKey = "Press any key to continue...";
         public const string NameCannotBeEmpty = "Name cannot be empty. Please enter a valid name: ";
-        public const string PlayerAlreadyExists = "A player with this name already exists. {0}";
+        public const string PlayerAlreadyExists = "A player with this name already exists.";
         public const string AtLeastTwoPlayersRequired = "At least two players are required to start a game.";
         public const string ConfigureSettingsFirst = "Game settings are not configured. Please configure settings before starting a game.";
         public const string InvalidInputPositiveInteger = "Invalid input. Please enter a positive integer.\n";
         public const string InvalidTieBreakerOption = "Invalid input. Please enter a valid tie-breaker option.\n";
         public const string InvalidYesOrNo = "Please enter 'y' or 'n': ";
-        public const string InvalidSessionName = "Invalid session name. {0}";
+        public const string InvalidSessionName = "Invalid session name.";
 
         // Game messages
         public const string StartingRound = "Starting round {0}...\n";
@@ -66,11 +68,11 @@ namespace DiceGame
         public const string ManagePlayersMenu = "=== Manage Players ===\nCurrent Players:\n{0}\nOptions:\n1. Add New Player\n2. Delete Player\n3. Back to Main Menu\n\nSelect an option: ";
         public const string NoPlayersAdded = "(No players added yet)";
         public const string EnterNewPlayerName = "Enter name for the new player: ";
-        public const string PlayerAdded = "Player '{0}' added successfully! {1}";
+        public const string PlayerAdded = "Player '{0}' added successfully!";
         public const string EnterPlayerNumberToDelete = "Enter the number of the player to delete: ";
         public const string ConfirmDeletePlayer = "Are you sure you want to delete '{0}'? (y/n): ";
-        public const string PlayerDeleted = "Player deleted successfully. {0}";
-        public const string InvalidPlayerSelection = "Invalid selection. {0}";
+        public const string PlayerDeleted = "Player deleted successfully.";
+        public const string InvalidPlayerSelection = "Invalid selection.";
 
         // Session management messages
         public const string SessionContinuationPrompt = "Saved game sessions found. Would you like to load an existing session? (y/n): ";
@@ -78,12 +80,12 @@ namespace DiceGame
         public const string SessionContinued = "Continuing game session '{0}'.";
         public const string SessionStartedNew = "Starting a new game session.";
         public const string EnterSessionName = "Enter a name for this session: ";
-        public const string SessionSaved = "Game session saved as '{0}'. {1}";
+        public const string SessionSaved = "Game session saved as '{0}'.";
         public const string ManageSessionsMenu = "=== Manage Sessions ===\nSaved Sessions:\n{0}\nOptions:\n1. Delete Session\n2. Back to Main Menu\n\nSelect an option: ";
         public const string NoSessionsAvailable = "(No saved sessions)";
         public const string EnterSessionNumberToDelete = "Enter the number of the session to delete: ";
         public const string ConfirmDeleteSession = "Are you sure you want to delete session '{0}'? (y/n): ";
-        public const string SessionDeleted = "Session deleted successfully. {0}";
+        public const string SessionDeleted = "Session deleted successfully.";
 
         // Miscellaneous
         public const string ExitingGame = "Exiting the game. Goodbye!";
@@ -98,7 +100,7 @@ namespace DiceGame
         public const string GameStatisticsHeader = "=== Game Statistics ===\n";
         public const string PlayerStats = "{0}:\n - Total Score: {1}\n - Rounds Won: {2}\n";
         public const string SessionLoadPrompt = "Enter the number of the session to load: ";
-        public const string InvalidSessionSelection = "Invalid selection. {0}";
+        public const string InvalidSessionSelection = "Invalid selection.";
         public const string SessionAlreadyExists = "A session with this name already exists. Overwrite? (y/n): ";
 
         // Tie-breaker rule strings
@@ -265,8 +267,6 @@ namespace DiceGame
                 Data = new GameData();
                 currentSessionFile = null;
                 RunSettingsWizardIfNeeded();
-                Console.WriteLine(Messages.PressAnyKey);
-                Console.ReadKey();
             }
         }
 
@@ -340,6 +340,9 @@ namespace DiceGame
                 return;
             }
 
+            // Ensure dice is instantiated
+            dice = new Dice(Data.Settings.NumberOfSides);
+
             if (Data.GameInProgress && Data.CurrentRound <= Data.Settings.NumberOfRounds)
             {
                 StartGame();
@@ -373,8 +376,6 @@ namespace DiceGame
                 { TieBreakerRule.HighestSingleDie, 0 },
                 { TieBreakerRule.ReRoll, 0 }
             };
-
-            dice = new Dice(Data.Settings.NumberOfSides);
 
             StartGame();
         }
@@ -526,56 +527,62 @@ namespace DiceGame
 
         private void ViewAndEditSettings()
         {
-            Console.Clear();
-            Console.Write(string.Format(Messages.SettingsMenu,
-                Data.Settings.NumberOfRounds,
-                Data.Settings.NumberOfDice,
-                Data.Settings.NumberOfSides,
-                Data.Settings.MaxRollsPerPlayer,
-                Data.Settings.TieBreakerRule));
-
-            string choice = Console.ReadLine();
-
-            if (int.TryParse(choice, out int menuChoice) &&
-                Enum.IsDefined(typeof(SettingsMenuOption), menuChoice))
+            while (true)
             {
-                switch ((SettingsMenuOption)menuChoice)
+                Console.Clear();
+                Console.Write(string.Format(Messages.SettingsMenu,
+                    Data.Settings.NumberOfRounds,
+                    Data.Settings.NumberOfDice,
+                    Data.Settings.NumberOfSides,
+                    Data.Settings.MaxRollsPerPlayer,
+                    Data.Settings.TieBreakerRule));
+
+                string choice = Console.ReadLine();
+
+                if (int.TryParse(choice, out int menuChoice) &&
+                    Enum.IsDefined(typeof(SettingsMenuOption), menuChoice))
                 {
-                    case SettingsMenuOption.NumberOfRounds:
-                        Data.Settings.NumberOfRounds = GetPositiveInteger(Messages.EnterNumberOfRounds);
-                        Data.Settings.IsConfigured = true;
+                    if (menuChoice == (int)SettingsMenuOption.BackToMainMenu)
+                    {
                         break;
-                    case SettingsMenuOption.NumberOfDice:
-                        Data.Settings.NumberOfDice = GetPositiveInteger(Messages.EnterNumberOfDice);
-                        Data.Settings.IsConfigured = true;
-                        break;
-                    case SettingsMenuOption.NumberOfSides:
-                        Data.Settings.NumberOfSides = GetPositiveInteger(Messages.EnterNumberOfSides);
-                        Data.Settings.IsConfigured = true;
-                        break;
-                    case SettingsMenuOption.MaxRollsPerPlayer:
-                        Data.Settings.MaxRollsPerPlayer = GetPositiveInteger(Messages.EnterMaxRollsPerPlayer);
-                        Data.Settings.IsConfigured = true;
-                        break;
-                    case SettingsMenuOption.TieBreakerRule:
-                        Data.Settings.TieBreakerRule = GetTieBreakerRule();
-                        Data.Settings.IsConfigured = true;
-                        break;
-                    case SettingsMenuOption.BackToMainMenu:
-                        return;
+                    }
+
+                    switch ((SettingsMenuOption)menuChoice)
+                    {
+                        case SettingsMenuOption.NumberOfRounds:
+                            Data.Settings.NumberOfRounds = GetPositiveInteger(Messages.EnterNumberOfRounds);
+                            Data.Settings.IsConfigured = true;
+                            break;
+                        case SettingsMenuOption.NumberOfDice:
+                            Data.Settings.NumberOfDice = GetPositiveInteger(Messages.EnterNumberOfDice);
+                            Data.Settings.IsConfigured = true;
+                            break;
+                        case SettingsMenuOption.NumberOfSides:
+                            Data.Settings.NumberOfSides = GetPositiveInteger(Messages.EnterNumberOfSides);
+                            Data.Settings.IsConfigured = true;
+                            break;
+                        case SettingsMenuOption.MaxRollsPerPlayer:
+                            Data.Settings.MaxRollsPerPlayer = GetPositiveInteger(Messages.EnterMaxRollsPerPlayer);
+                            Data.Settings.IsConfigured = true;
+                            break;
+                        case SettingsMenuOption.TieBreakerRule:
+                            Data.Settings.TieBreakerRule = GetTieBreakerRule();
+                            Data.Settings.IsConfigured = true;
+                            break;
+                    }
+
+                    SaveCurrentSession();
+
+                    Console.WriteLine(Messages.SettingsUpdated);
+                    Console.WriteLine(Messages.PressAnyKey);
+                    Console.ReadKey();
                 }
-
-                SaveCurrentSession();
-
-                Console.WriteLine(Messages.SettingsUpdated);
-                Console.WriteLine(Messages.PressAnyKey);
-                Console.ReadKey();
-            }
-            else
-            {
-                Console.WriteLine(Messages.InvalidSelection);
-                Console.WriteLine(Messages.PressAnyKey);
-                Console.ReadKey();
+                else
+                {
+                    Console.WriteLine(Messages.InvalidSelection);
+                    Console.WriteLine(Messages.PressAnyKey);
+                    Console.ReadKey();
+                }
             }
         }
 
@@ -630,7 +637,7 @@ namespace DiceGame
                 }
                 else if (choice == "3")
                 {
-                    return;
+                    break;
                 }
                 else
                 {
@@ -653,21 +660,31 @@ namespace DiceGame
 
             if (Data.Players.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
-                Console.WriteLine(string.Format(Messages.PlayerAlreadyExists, Messages.PressAnyKey));
-                Console.ReadKey();
-                return;
+                Console.WriteLine(Messages.PlayerAlreadyExists);
+            }
+            else
+            {
+                Player player = new Player(name);
+                Data.Players.Add(player);
+                SaveCurrentSession();
+
+                Console.WriteLine(string.Format(Messages.PlayerAdded, name));
             }
 
-            Player player = new Player(name);
-            Data.Players.Add(player);
-            SaveCurrentSession();
-
-            Console.WriteLine(string.Format(Messages.PlayerAdded, name, Messages.PressAnyKey));
+            Console.WriteLine(Messages.PressAnyKey);
             Console.ReadKey();
         }
 
         private void DeletePlayer()
         {
+            if (Data.Players.Count == 0)
+            {
+                Console.WriteLine(Messages.NoPlayersAdded);
+                Console.WriteLine(Messages.PressAnyKey);
+                Console.ReadKey();
+                return;
+            }
+
             Console.Write(Messages.EnterPlayerNumberToDelete);
             if (int.TryParse(Console.ReadLine(), out int index) && index >= 1 && index <= Data.Players.Count)
             {
@@ -677,15 +694,16 @@ namespace DiceGame
                 {
                     Data.Players.RemoveAt(index - 1);
                     SaveCurrentSession();
-                    Console.WriteLine(string.Format(Messages.PlayerDeleted, Messages.PressAnyKey));
-                    Console.ReadKey();
+                    Console.WriteLine(Messages.PlayerDeleted);
                 }
             }
             else
             {
-                Console.WriteLine(string.Format(Messages.InvalidPlayerSelection, Messages.PressAnyKey));
-                Console.ReadKey();
+                Console.WriteLine(Messages.InvalidPlayerSelection);
             }
+
+            Console.WriteLine(Messages.PressAnyKey);
+            Console.ReadKey();
         }
 
         private void ManageSessions()
@@ -709,7 +727,7 @@ namespace DiceGame
                 }
                 else if (choice == "2")
                 {
-                    return;
+                    break;
                 }
                 else
                 {
@@ -722,6 +740,14 @@ namespace DiceGame
 
         private void DeleteSession(string[] sessionFiles)
         {
+            if (sessionFiles.Length == 0)
+            {
+                Console.WriteLine(Messages.NoSessionsAvailable);
+                Console.WriteLine(Messages.PressAnyKey);
+                Console.ReadKey();
+                return;
+            }
+
             Console.Write(Messages.EnterSessionNumberToDelete);
             if (int.TryParse(Console.ReadLine(), out int index) && index >= 1 && index <= sessionFiles.Length)
             {
@@ -732,15 +758,16 @@ namespace DiceGame
                 if (confirm == Messages.Yes)
                 {
                     File.Delete(sessionFile);
-                    Console.WriteLine(string.Format(Messages.SessionDeleted, Messages.PressAnyKey));
-                    Console.ReadKey();
+                    Console.WriteLine(Messages.SessionDeleted);
                 }
             }
             else
             {
-                Console.WriteLine(string.Format(Messages.InvalidSessionSelection, Messages.PressAnyKey));
-                Console.ReadKey();
+                Console.WriteLine(Messages.InvalidSessionSelection);
             }
+
+            Console.WriteLine(Messages.PressAnyKey);
+            Console.ReadKey();
         }
 
         private void LoadSession()
@@ -760,17 +787,17 @@ namespace DiceGame
                 string jsonData = File.ReadAllText(currentSessionFile);
                 Data = JsonConvert.DeserializeObject<GameData>(jsonData);
                 Console.WriteLine(string.Format(Messages.SessionContinued, Path.GetFileNameWithoutExtension(currentSessionFile)));
-                Console.WriteLine(Messages.PressAnyKey);
-                Console.ReadKey();
             }
             else
             {
-                Console.WriteLine(string.Format(Messages.InvalidSessionSelection, Messages.PressAnyKey));
-                Console.ReadKey();
+                Console.WriteLine(Messages.InvalidSessionSelection);
                 Data = new GameData();
                 currentSessionFile = null;
                 RunSettingsWizardIfNeeded();
             }
+
+            Console.WriteLine(Messages.PressAnyKey);
+            Console.ReadKey();
         }
 
         private void SaveCurrentSession()
@@ -781,7 +808,8 @@ namespace DiceGame
                 string sessionName = Console.ReadLine().Trim();
                 while (string.IsNullOrEmpty(sessionName))
                 {
-                    Console.Write(Messages.InvalidSessionName, Messages.PressAnyKey);
+                    Console.WriteLine(Messages.InvalidSessionName);
+                    Console.Write(Messages.EnterSessionName);
                     sessionName = Console.ReadLine().Trim();
                 }
 
@@ -808,8 +836,7 @@ namespace DiceGame
 
             string jsonData = JsonConvert.SerializeObject(Data, Formatting.Indented);
             File.WriteAllText(currentSessionFile, jsonData);
-            //Console.WriteLine(string.Format(Messages.SessionSaved, Path.GetFileNameWithoutExtension(currentSessionFile), Messages.PressAnyKey));
-            //Console.ReadKey();
+            Console.WriteLine(string.Format(Messages.SessionSaved, Path.GetFileNameWithoutExtension(currentSessionFile)));
         }
 
         private Player HandleTie(List<Player> tiedPlayers, string tieContext)
@@ -964,7 +991,7 @@ namespace DiceGame
                 }
             }
 
-            Console.WriteLine("\n" + Messages.LeaderboardHeader);
+            Console.WriteLine();
             DisplayLeaderboard();
 
             Player overallWinner = null;
